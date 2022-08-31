@@ -1,0 +1,17 @@
+name: AFKRewards
+version: '${project.version}'
+main: com.github.gavvydizzle.afkrewards.AFKRewards
+api-version: 1.18
+softdepend: [ MultiverseCore ]
+depend: [ LuckPerms, ServerUtils, WorldGuard ]
+authors: [ GavvyDizzle ]
+description: Custom AFK rewards plugin for MittenMC
+commands:
+  afkadmin:
+    description: AFKRewards admin commands
+    permission: afkrewards.admin
+    permission-message: Insufficient permission
+  religion:
+    description: Religion commands
+    permission: afkrewards.religioncommands
+    permission-message: Insufficient permission
