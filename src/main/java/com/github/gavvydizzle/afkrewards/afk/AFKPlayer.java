@@ -61,6 +61,7 @@ public class AFKPlayer {
         bossBar.removeAll();
         AFKManager manager = AFKRewards.getInstance().getAfkManager();
         bossBar = Bukkit.createBossBar(manager.getBarName(), manager.getBarColor(), manager.getBarStyle());
+        updateBossbar();
         bossBar.addPlayer(player);
     }
 

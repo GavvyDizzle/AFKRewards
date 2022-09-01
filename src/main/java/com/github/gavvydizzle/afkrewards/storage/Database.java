@@ -20,7 +20,7 @@ public abstract class Database {
 
     private final String CREATE_TOKEN_TABLE = "CREATE TABLE IF NOT EXISTS tokens(" +
             "uuid BINARY(16)           NOT NULL," +
-            "score INT DEFAULT 1       NOT NULL," +
+            "score INT DEFAULT 0       NOT NULL," +
             "time BIGINT DEFAULT 0     NOT NULL," +
             "progress BIGINT DEFAULT 0 NOT NULL," +
             "PRIMARY KEY (uuid)" +
@@ -28,7 +28,9 @@ public abstract class Database {
 
     private final String LOAD_LEADERBOARD_DATA = "SELECT * FROM tokens ORDER BY score DESC, time ASC limit ?;";
 
-    private final String INCREMENT_PLAYER_SCORE = "INSERT OR REPLACE INTO tokens(uuid, score, time) VALUES(?,(SELECT score FROM tokens WHERE uuid=?)+2,?);";
+    private final String INSERT_PLAYER = "INSERT OR IGNORE INTO tokens(uuid, time) VALUES(?,?);";
+
+    private final String INCREMENT_PLAYER_SCORE = "UPDATE tokens SET score=score+1, time=? WHERE uuid=?;";
 
     private final String SET_PLAYER_SCORE = "UPDATE tokens SET score=?, time=? WHERE uuid=?;";
 
@@ -70,6 +72,33 @@ public abstract class Database {
     }
 
     /**
+     * Insert the player into the table with default values
+     * @param player The player
+     */
+    public void insertPlayer(Player player) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getSQLConnection();
+            ps = conn.prepareStatement(INSERT_PLAYER);
+            ps.setBytes(1, UUIDConverter.convert(player.getUniqueId()));
+            ps.setLong(2, System.currentTimeMillis());
+            ps.execute();
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);
+        } finally {
+            try {
+                if (ps != null)
+                    ps.close();
+                if (conn != null)
+                    conn.close();
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
+            }
+        }
+    }
+
+    /**
      * Increase the score by one for the player
      * @param player The player
      */
@@ -79,9 +108,8 @@ public abstract class Database {
         try {
             conn = getSQLConnection();
             ps = conn.prepareStatement(INCREMENT_PLAYER_SCORE);
-            ps.setBytes(1, UUIDConverter.convert(player.getUniqueId()));
+            ps.setLong(1, System.currentTimeMillis());
             ps.setBytes(2, UUIDConverter.convert(player.getUniqueId()));
-            ps.setLong(3, System.currentTimeMillis());
             ps.execute();
         } catch (SQLException ex) {
             plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionExecute(), ex);

@@ -224,6 +224,7 @@ public class AFKManager implements Listener {
 
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent e) {
+        AFKRewards.getInstance().getDatabase().insertPlayer(e.getPlayer());
         afkMillisProgress.put(e.getPlayer().getUniqueId(), AFKRewards.getInstance().getDatabase().getProgress(e.getPlayer()));
     }
 
@@ -248,7 +249,7 @@ public class AFKManager implements Listener {
      */
     public int getSecondsUntilNextToken(Player player) {
         if (afkPlayers.containsKey(player.getUniqueId())) {
-            return (int) afkPlayers.get(player.getUniqueId()).getProgress();
+            return (int) (secondsBetweenTokens - (afkPlayers.get(player.getUniqueId()).getProgress() / 1000));
         }
         else {
             return (int) (secondsBetweenTokens - (afkMillisProgress.get(player.getUniqueId()) / 1000));
